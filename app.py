@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import plotly.express as px
 plt.style.use('ggplot')
 
 
@@ -82,20 +83,6 @@ def load_startup_detail(startup):
         ax.bar(df66.index,df66.values)
         st.pyplot(fig)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def load_overall_analysis():
     col1,col2,col3,col4 = st.columns(4)
     with col1:
@@ -111,24 +98,20 @@ def load_overall_analysis():
         no_startup = df.startup.nunique()
         st.metric('No of Startup',str(no_startup))
     but4 = st.selectbox('Select type',['Count','Amount'])
-    if but4 == 'Count':
-        tem_startup_count = df.groupby(['month', 'year']).startup.count().reset_index()
-        tem_startup_count['x_axis'] = tem_startup_count['month'].astype(str) + '-' + tem_startup_count['year'].astype(
-            str)
-        st.subheader('MoM investment in number of startup ')
-        fig6, ax6 = plt.subplots()
-        ax6.plot(tem_startup_count['x_axis'],tem_startup_count['startup'])
-        st.pyplot(fig6)
-    else:
-        tem_startup_amount = df.groupby(['month', 'year']).amount.sum().reset_index()
-        tem_startup_amount['x_asix'] = tem_startup_amount['month'].astype(str) + '-' + tem_startup_amount[
-            'year'].astype(str)
-        st.subheader('MoM investment amount in startup')
-        fig7, ax7 = plt.subplots()
-        ax7.plot(tem_startup_amount['x_asix'],tem_startup_amount['amount'])
-        st.pyplot(fig7)
+    st.subheader('Top 10 statup of India')
+    df23 = df.groupby('startup')['amount'].sum().reset_index().sort_values('amount', ascending=False).head(10)
+    fig = px.bar(df23,x='startup',y='amount',color='startup',text_auto=True)
+    st.plotly_chart(fig)
 
+    st.subheader('Investment Year on Year')
+    df24 = df.groupby('year')['amount'].sum().reset_index()
+    fig = px.line(df24, x='year', y='amount')
+    st.plotly_chart(fig)
 
+    st.subheader('Investment Month On Month')
+    df25 = df.groupby('month')['amount'].sum().reset_index()
+    fig = px.line(df25, x='month', y='amount')
+    st.plotly_chart(fig)
 
 
 
@@ -138,6 +121,8 @@ option = st.sidebar.selectbox('Select One',['Overall Analysis','Startup','Invest
 if option == 'Overall Analysis':
     st.title('Overall Analysis')
     load_overall_analysis()
+
+
 
 elif option == 'Startup':
     select_startup = st.sidebar.selectbox('Select Startup',sorted(df['startup'].unique().tolist()))
