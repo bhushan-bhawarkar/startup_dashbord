@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+plt.style.use('ggplot')
+
+
 st.set_page_config(layout='wide')
 df = pd.read_csv('startup_cleaned_dataset.csv')
 df.date = pd.to_datetime(df.date,errors='coerce')
@@ -50,6 +53,48 @@ def load_investors_detail(invertor):
         fig4,ax4 = plt.subplots()
         ax4.plot(df6.index,df6.values)
         st.pyplot(fig4)
+def load_startup_detail(startup):
+    st.title(startup)
+    st.subheader('Most recent investment')
+    df11 = df[df.startup.str.contains(startup)][['date','startup','vertical','amount']].head(5)
+    st.dataframe(df11)
+    col1,col2 = st.columns(2)
+    with col1:
+        st.subheader('Biggest Investments')
+        df22 = df[df.startup.str.contains(startup)].groupby('investors').amount.sum().sort_values(ascending=False)
+        st.dataframe(df22)
+    with col2:
+        st.subheader('Biggest Investments Pie Chart')
+        fig, ax = plt.subplots()
+        ax.pie(df22,labels=df22.index,autopct='%1.01f%%')
+        st.pyplot(fig)
+    col1,col2 = st.columns(2)
+    with col1:
+        st.subheader('Investment in witch round')
+        df44 = df[df.startup.str.contains(startup)].groupby('round')['amount'].sum()
+        fig,ax = plt.subplots()
+        ax.pie(df44,labels=df44.index , autopct='%0.1f%%')
+        st.pyplot(fig)
+    with col1:
+        st.subheader('Investment Year On Year')
+        df66 = df[df.startup.str.contains(startup)].groupby('year')['amount'].sum()
+        fig , ax = plt.subplots()
+        ax.bar(df66.index,df66.values)
+        st.pyplot(fig)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def load_overall_analysis():
     col1,col2,col3,col4 = st.columns(4)
@@ -86,6 +131,7 @@ def load_overall_analysis():
 
 
 
+
 st.sidebar.title('Startup Funding Analysis')
 option = st.sidebar.selectbox('Select One',['Overall Analysis','Startup','Investor'])
 
@@ -94,9 +140,11 @@ if option == 'Overall Analysis':
     load_overall_analysis()
 
 elif option == 'Startup':
-    st.sidebar.selectbox('Select Startup',sorted(df['startup'].unique().tolist()))
+    select_startup = st.sidebar.selectbox('Select Startup',sorted(df['startup'].unique().tolist()))
     st.title('Startup Analysis')
     but1 = st.sidebar.button('Find Startup Detail')
+    if but1:
+        load_startup_detail(select_startup)
 else:
     select_investors = st.sidebar.selectbox('select Invester',sorted(set(df.investors.str.split().sum())))
     st.title('Invester Analysis')
